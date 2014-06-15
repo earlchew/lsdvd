@@ -59,6 +59,10 @@ void XMLSTOP_() {
 	while(_xlvl) XMLRETURN;
 }
 
+static void oxml_playback_time(const playback_time_t *pb) {
+	XMLDEF("duration", "%d %d", pb->ticks, pb->scale);
+}
+
 void oxml_print(struct dvd_info *dvd_info) {
 	int j, i;
 
@@ -78,6 +82,7 @@ void oxml_print(struct dvd_info *dvd_info) {
 		XMLBOX("track");
 		XMLDEF("ix", "%d", j+1);
 		XMLDEF("length", "%.3f", dvd_info->titles[j].general.length);
+		oxml_playback_time(&dvd_info->titles[j].general.playback_time);
 		XMLDEF("vts_id", "%.12s", dvd_info->titles[j].general.vts_id);
 
 		if (dvd_info->titles[j].parameter.format != NULL ) {
@@ -131,6 +136,7 @@ void oxml_print(struct dvd_info *dvd_info) {
 				XMLBOX("chapter");
 				XMLDEF("ix", "%d", i+1);
 				XMLDEF("length", "%.3f", dvd_info->titles[j].chapters[i].length);
+				oxml_playback_time(&dvd_info->titles[j].chapters[i].playback_time);
 				XMLDEF("startcell", "%d", dvd_info->titles[j].chapters[i].startcell);
 				XMLDEF("lastcell", "%d", dvd_info->titles[j].chapters[i].lastcell);
 				XMLRETURN;
@@ -144,6 +150,7 @@ void oxml_print(struct dvd_info *dvd_info) {
 				XMLBOX("cell");
 				XMLDEF("ix", "%d", i+1);
 				XMLDEF("length", "%.3f", dvd_info->titles[j].cells[i].length);
+				oxml_playback_time(&dvd_info->titles[j].cells[i].playback_time);
 				XMLDEF("first_sector", "%" PRIu32, dvd_info->titles[j].cells[i].first_sector);
 				XMLDEF("last_sector", "%" PRIu32, dvd_info->titles[j].cells[i].last_sector);
 				XMLDEF("block_mode", "%d", dvd_info->titles[j].cells[i].block_mode);

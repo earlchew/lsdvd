@@ -148,6 +148,12 @@ static void STOP_() {
         while(_lvl) RETURN;
 }
 
+static void ocode_playback_time(const playback_time_t *pb) {
+	ARRAY("duration");
+	ADEF("%d", pb->ticks);
+	ADEF("%d", pb->scale);
+	RETURN;
+}
 
 void ocode_print(struct Syntax *syntax_, struct dvd_info *dvd_info) {
         int j, i;
@@ -173,6 +179,7 @@ void ocode_print(struct Syntax *syntax_, struct dvd_info *dvd_info) {
                 HASH(0);
                 DEF("ix", "%d", j+1);
                 DEF("length", "%.3f", dvd_info->titles[j].general.length);
+		ocode_playback_time(&dvd_info->titles[j].general.playback_time);
                 DEF("vts_id", "'%.12s'", dvd_info->titles[j].general.vts_id);
 
                 if (dvd_info->titles[j].parameter.format != NULL ) {
@@ -230,6 +237,7 @@ void ocode_print(struct Syntax *syntax_, struct dvd_info *dvd_info) {
                                 HASH(0);
                                 DEF("ix", "%d", i+1);
                                 DEF("length", "%.3f", dvd_info->titles[j].chapters[i].length);
+				ocode_playback_time(&dvd_info->titles[j].chapters[i].playback_time);
                                 DEF("startcell", "%d", dvd_info->titles[j].chapters[i].startcell);
                                 DEF("lastcell", "%d", dvd_info->titles[j].chapters[i].lastcell);
                                 RETURN;
@@ -245,6 +253,7 @@ void ocode_print(struct Syntax *syntax_, struct dvd_info *dvd_info) {
                                 HASH(0);
                                 DEF("ix", "%d", i+1);
                                 DEF("length", "%.3f", dvd_info->titles[j].cells[i].length);
+				ocode_playback_time(&dvd_info->titles[j].cells[i].playback_time);
 				DEF("first_sector", "%" PRIu32, dvd_info->titles[j].cells[i].first_sector);
 				DEF("last_sector", "%" PRIu32, dvd_info->titles[j].cells[i].last_sector);
                                 DEF("block_mode", "%d", dvd_info->titles[j].cells[i].block_mode);
