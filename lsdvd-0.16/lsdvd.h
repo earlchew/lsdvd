@@ -1,3 +1,4 @@
+/* -*- c-basic-offset:8; indent-tabs-mode:t -*- vi: set sw=8: */
 #ifndef _LSDVD_H_
 #define _LSDVD_H_
 

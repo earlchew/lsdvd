@@ -1,3 +1,4 @@
+/* -*- c-basic-offset:8; indent-tabs-mode:t -*- vi: set sw=8: */
 #include "oxml.h"
 
 static int _xlvl = 0;
