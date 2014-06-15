@@ -12,6 +12,8 @@ typedef struct {
 	int minute;
 	int second;
 	int usec;
+	int ticks;
+	int scale;
 } playback_time_t;
 
 struct dvd_info {

@@ -76,8 +76,8 @@ char *sample_freq[2]  = {"48000", "48000"};
 char *audio_type[5]   = {"Undefined", "Normal", "Impaired", "Comments1", "Comments2"};
 char *subp_type[16]   = {"Undefined", "Normal", "Large", "Children", "reserved", "Normal_CC", "Large_CC", "Children_CC",
 	"reserved", "Forced", "reserved", "reserved", "reserved", "Director", "Large_Director", "Children_Director"};
-int   subp_id_shift[4] = {24, 8, 8, 8};
 double frames_per_s[4] = {-1.0, 25.00, -1.0, 29.97};
+int   subp_id_shift[4] = {24, 8, 8, 8};
 
 char* program_name;
 
@@ -86,38 +86,79 @@ char* program_name;
 //extern void oruby_print(struct dvd_info *dvd_info);
 //extern void ohuman_print(struct dvd_info *dvd_info);
 
-int dvdtime2msec(dvd_time_t *dt)
-{
-	double fps = frames_per_s[(dt->frame_u & 0xc0) >> 6];
-	long   ms;
-	ms  = (((dt->hour &   0xf0) >> 3) * 5 + (dt->hour   & 0x0f)) * 3600000;
-	ms += (((dt->minute & 0xf0) >> 3) * 5 + (dt->minute & 0x0f)) * 60000;
-	ms += (((dt->second & 0xf0) >> 3) * 5 + (dt->second & 0x0f)) * 1000;
+/* Ticks
+ *
+ * Compute durations using rational arithmetic to avoid loss of precision
+ * when summing. The result of the sum will be exact prior to converting
+ * the sum.
+ */
+#define TICK_SCALE 1001
 
-	if(fps > 0)
-	ms += (((dt->frame_u & 0x30) >> 3) * 5 + (dt->frame_u & 0x0f)) * 1000.0 / fps;
+typedef struct {
+	unsigned ticks;
+	unsigned scale;
+} dvd_ticks_t;
 
-	return ms;
+dvd_ticks_t dvdtime2ticks(const dvd_time_t *dt)
+  {
+	unsigned scale = 0;
+	unsigned secs  = 0;
+	unsigned ticks = 0;
+
+	if (dt) {
+		static const unsigned tick_scale[4] = {
+			0, 25 * TICK_SCALE, 0, 30 * (TICK_SCALE-1) };
+
+		scale = tick_scale[(dt->frame_u & 0xc0) >> 6];
+
+		secs += (((dt->hour   & 0xf0) >> 3) * 5 + (dt->hour   & 0x0f)) * 3600;
+		secs += (((dt->minute & 0xf0) >> 3) * 5 + (dt->minute & 0x0f)) * 60;
+		secs += (((dt->second & 0xf0) >> 3) * 5 + (dt->second & 0x0f)) * 1;
+
+		ticks += ((dt->frame_u & 0x30)>> 3) * 5 + (dt->frame_u & 0x0f);
+		ticks *= TICK_SCALE;
+	}
+
+	return (dvd_ticks_t) {
+		.scale = scale,
+		.ticks = secs * scale + ticks,
+	};
+  }
+
+dvd_ticks_t addticks(dvd_ticks_t lhs, dvd_ticks_t rhs)
+  {
+	if (lhs.ticks == 0)
+		return rhs;
+	if (rhs.ticks == 0)
+		return lhs;
+	return (dvd_ticks_t) {
+		.ticks = lhs.ticks + rhs.ticks,
+		.scale = lhs.scale == rhs.scale ? lhs.scale : 0,
+	};
 }
 
-/*
- * This is used to add up sets of times in the struct. it's not elegant at all
- * but a quick way to easily add up 4 times at once. tracking the times in usec's
- * constantly is easier, but without using math.h, it sucks to actually DO anything with it
- * also it ***has*** to be better to return the playback_time, not just mess with it like this
- */
-void converttime(playback_time_t *pt, dvd_time_t *dt)
+playback_time_t ticks2playbacktime(dvd_ticks_t dt)
 {
-	double fps = frames_per_s[(dt->frame_u & 0xc0) >> 6];
+	unsigned secs = dt.ticks / dt.scale;
+	unsigned frac = dt.ticks % dt.scale;
 
-	pt->usec = pt->usec + (((dt->frame_u & 0x30) >> 3) * 5 + (dt->frame_u & 0x0f)) * 1000.0 / fps;
-	pt->second = pt->second + ((dt->second & 0xf0) >> 3) * 5 + (dt->second & 0x0f);
-	pt->minute = pt->minute + ((dt->minute & 0xf0) >> 3) * 5 + (dt->minute & 0x0f);
-	pt->hour = pt->hour + ((dt->hour &   0xf0) >> 3) * 5 + (dt->hour   & 0x0f);
+	return (playback_time_t) {
+		.hour   = (secs / 3600),
+		.minute = (secs % 3600) / 60,
+		.second = (secs %   60),
+		.usec   = (frac * (1000000 / dt.scale) +
+			   frac * (1000000 % dt.scale) / dt.scale),
+		.ticks  = (dt.ticks),
+		.scale  = (dt.scale),
+	};
+}
 
-	if ( pt->usec >= 1000 ) { pt->usec -= 1000; pt->second++; }
-	if ( pt->second >= 60 ) { pt->second -= 60; pt->minute++; }
-	if ( pt->minute > 59 ) { pt->minute -= 60; pt->hour++; }
+double playbacktime(playback_time_t pt)
+{
+	return pt.hour   * 3600 +
+	       pt.minute *   60 +
+	       pt.second *    1 +
+	       pt.usec   /  1e6;
 }
 
 /*
@@ -339,13 +380,16 @@ int main(int argc, char *argv[])
 		vmgi_mat = ifo_zero->vmgi_mat;
 		title_set_nr = ifo_zero->tt_srpt->title[j].title_set_nr;
 		pgc = vts_pgcit->pgci_srp[ifo[title_set_nr]->vts_ptt_srpt->title[vts_ttn - 1].ptt[0].pgcn - 1].pgc;
-
-		dvd_info.titles[j].general.length = dvdtime2msec(&pgc->playback_time)/1000.0;
-		converttime(&dvd_info.titles[j].general.playback_time, &pgc->playback_time);
+		dvd_info.titles[j].general.length =
+			playbacktime(
+				ticks2playbacktime(
+					dvdtime2ticks(&pgc->playback_time)));
+		dvd_info.titles[j].general.playback_time =
+			ticks2playbacktime(dvdtime2ticks(&pgc->playback_time));
 		dvd_info.titles[j].general.vts_id = vtsi_mat->vts_identifier;
 
-		if (dvdtime2msec(&pgc->playback_time) > max_length) {
-			max_length = dvdtime2msec(&pgc->playback_time);
+		if (dvd_info.titles[j].general.length > max_length) {
+			max_length = dvd_info.titles[j].general.length;
 			max_track = j+1;
 		}
 
@@ -430,7 +474,7 @@ int main(int argc, char *argv[])
 
 			for (i=0; i<pgc->nr_of_programs; i++)
 			{
-				int ms = 0;
+				dvd_ticks_t ticks = dvdtime2ticks(NULL);
 				int next =
 					(i == pgc->nr_of_programs - 1)
 					? end
@@ -440,16 +484,19 @@ int main(int argc, char *argv[])
                                         // Only use first cell of multi-angle cells
                                         if (pgc->cell_playback[cell].block_mode <= 1)
                                         {
-                                                ms = ms + dvdtime2msec(&pgc->cell_playback[cell].playback_time);
-                                                converttime(&dvd_info.titles[j].chapters[i].playback_time, &pgc->cell_playback[cell].playback_time);
+						dvd_ticks_t dt = dvdtime2ticks(
+							&pgc->cell_playback[cell].playback_time);
+						ticks = addticks(ticks, dt);
+						dvd_info.titles[j].chapters[i].playback_time =
+							ticks2playbacktime(dt);
                                         }
 					cell++;
 				}
 				dvd_info.titles[j].chapters[i].startcell = pgc->program_map[i];
 				dvd_info.titles[j].chapters[i].lastcell = cell;
-				dvd_info.titles[j].chapters[i].length = ms * 0.001;
-
-
+				dvd_info.titles[j].chapters[i].length =
+					playbacktime(
+						ticks2playbacktime(ticks));
 			}
 		}
 
@@ -461,10 +508,16 @@ int main(int argc, char *argv[])
 		if (opt_d) {
 			for (i=0; i<pgc->nr_of_cells; i++)
 			{
-				dvd_info.titles[j].cells[i].length = dvdtime2msec(&pgc->cell_playback[i].playback_time)/1000.0;
+				dvd_ticks_t dt = dvdtime2ticks(
+					&pgc->cell_playback[i].playback_time);
+				playback_time_t pt = ticks2playbacktime(dt);
+
+				dvd_info.titles[j].cells[i].playback_time = pt;
+				dvd_info.titles[j].cells[i].length =
+					playbacktime(pt);
+
                                 dvd_info.titles[j].cells[i].block_mode = pgc->cell_playback[i].block_mode;
                                 dvd_info.titles[j].cells[i].block_type = pgc->cell_playback[i].block_type;
-                                converttime(&dvd_info.titles[j].cells[i].playback_time, &pgc->cell_playback[i].playback_time);
 				dvd_info.titles[j].cells[i].first_sector = pgc->cell_playback[i].first_sector;
 				dvd_info.titles[j].cells[i].last_sector = pgc->cell_playback[i].last_sector;
 			}
