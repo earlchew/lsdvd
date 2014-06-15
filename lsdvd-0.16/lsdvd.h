@@ -2,6 +2,8 @@
 #ifndef _LSDVD_H_
 #define _LSDVD_H_
 
+#include <stdint.h>
+
 extern int opt_a, opt_c, opt_n, opt_p, opt_q;
 extern int opt_s, opt_t, opt_v, opt_x, opt_d;
 
@@ -56,11 +58,14 @@ struct dvd_info {
 			float length;
 			playback_time_t playback_time;
 			int startcell;
+			int lastcell;
 		} *chapters;
 		int cell_count;
 		struct {
 			float length;
 			playback_time_t playback_time;
+			uint32_t first_sector;
+			uint32_t last_sector;
                         int block_mode;
                         int block_type;
 		} *cells;

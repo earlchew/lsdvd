@@ -70,18 +70,19 @@ void ohuman_print(struct dvd_info *dvd_info) {
 		if (dvd_info->titles[j].chapters != NULL) {
 			for (i=0; i<dvd_info->titles[j].chapter_count; i++)
 			{
-//				printf("\tChapter: %02d, Length: %02d:%02d:%02d.%03d, Start Cell: %02d\n", i+1,
+//				printf("\tChapter: %02d, Length: %02d:%02d:%02d.%03d, Start Cell: %02d, Last Cell: %02d\n", i+1,
 //						(int)dvd_info->titles[j].chapters[i].length / 3600,
 //						(int)(dvd_info->titles[j].chapters[i].length / 60 ) % 60,
 //						(int)(dvd_info->titles[j].chapters[i].length) % 60,
 //						(int)(dvd_info->titles[j].chapters[i].length*1000) % 1000,
 //						dvd_info->titles[j].chapters[i].startcell);
-				printf("\tChapter: %02d, Length: %02d:%02d:%02d.%03d, Start Cell: %02d\n", i+1,
+				printf("\tChapter: %02d, Length: %02d:%02d:%02d.%03d, Start Cell: %d, Last Cell: %d\n", i+1,
 						dvd_info->titles[j].chapters[i].playback_time.hour,
 						dvd_info->titles[j].chapters[i].playback_time.minute,
 						dvd_info->titles[j].chapters[i].playback_time.second,
 						dvd_info->titles[j].chapters[i].playback_time.usec,
-						dvd_info->titles[j].chapters[i].startcell);
+						dvd_info->titles[j].chapters[i].startcell,
+						dvd_info->titles[j].chapters[i].lastcell);
 			}
 		}
 
@@ -94,11 +95,13 @@ void ohuman_print(struct dvd_info *dvd_info) {
 //						(int)(dvd_info->titles[j].cells[i].length / 60 ) % 60,
 //						(int)(dvd_info->titles[j].cells[i].length) % 60,
 //						(int)(dvd_info->titles[j].cells[i].length*1000) % 1000);
-				printf("\tCell: %02d, Length: %02d:%02d:%02d.%03d\n", i+1,
+				printf("\tCell: %02d, Length: %02d:%02d:%02d.%03d, First Sector: %d, Last Sector: %d\n", i+1,
 						dvd_info->titles[j].cells[i].playback_time.hour,
 						dvd_info->titles[j].cells[i].playback_time.minute,
 						dvd_info->titles[j].cells[i].playback_time.second,
-						dvd_info->titles[j].cells[i].playback_time.usec);
+						dvd_info->titles[j].cells[i].playback_time.usec,
+						dvd_info->titles[j].cells[i].first_sector,
+						dvd_info->titles[j].cells[i].last_sector);
 			}
 		}
 

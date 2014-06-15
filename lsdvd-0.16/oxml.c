@@ -1,6 +1,8 @@
 /* -*- c-basic-offset:8; indent-tabs-mode:t -*- vi: set sw=8: */
 #include "oxml.h"
 
+#include <inttypes.h>
+
 static int _xlvl = 0;
 char *_xlvl_type[256];
 
@@ -130,6 +132,7 @@ void oxml_print(struct dvd_info *dvd_info) {
 				XMLDEF("ix", "%d", i+1);
 				XMLDEF("length", "%.3f", dvd_info->titles[j].chapters[i].length);
 				XMLDEF("startcell", "%d", dvd_info->titles[j].chapters[i].startcell);
+				XMLDEF("lastcell", "%d", dvd_info->titles[j].chapters[i].lastcell);
 				XMLRETURN;
 			}
 		}
@@ -141,6 +144,8 @@ void oxml_print(struct dvd_info *dvd_info) {
 				XMLBOX("cell");
 				XMLDEF("ix", "%d", i+1);
 				XMLDEF("length", "%.3f", dvd_info->titles[j].cells[i].length);
+				XMLDEF("first_sector", "%" PRIu32, dvd_info->titles[j].cells[i].first_sector);
+				XMLDEF("last_sector", "%" PRIu32, dvd_info->titles[j].cells[i].last_sector);
 				XMLDEF("block_mode", "%d", dvd_info->titles[j].cells[i].block_mode);
 				XMLDEF("block_type", "%d", dvd_info->titles[j].cells[i].block_type);
 				XMLRETURN;

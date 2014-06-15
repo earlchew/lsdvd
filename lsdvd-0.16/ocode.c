@@ -1,6 +1,8 @@
 /* -*- c-basic-offset:8; indent-tabs-mode:t -*- vi: set sw=8: */
 #include "ocode.h"
 
+#include <inttypes.h>
+
 /*
    Simple helper macros for generating Perl structures
 */
@@ -229,6 +231,7 @@ void ocode_print(struct Syntax *syntax_, struct dvd_info *dvd_info) {
                                 DEF("ix", "%d", i+1);
                                 DEF("length", "%.3f", dvd_info->titles[j].chapters[i].length);
                                 DEF("startcell", "%d", dvd_info->titles[j].chapters[i].startcell);
+                                DEF("lastcell", "%d", dvd_info->titles[j].chapters[i].lastcell);
                                 RETURN;
                         }
                         RETURN;
@@ -242,6 +245,8 @@ void ocode_print(struct Syntax *syntax_, struct dvd_info *dvd_info) {
                                 HASH(0);
                                 DEF("ix", "%d", i+1);
                                 DEF("length", "%.3f", dvd_info->titles[j].cells[i].length);
+				DEF("first_sector", "%" PRIu32, dvd_info->titles[j].cells[i].first_sector);
+				DEF("last_sector", "%" PRIu32, dvd_info->titles[j].cells[i].last_sector);
                                 DEF("block_mode", "%d", dvd_info->titles[j].cells[i].block_mode);
                                 DEF("block_type", "%d", dvd_info->titles[j].cells[i].block_type);
                                 RETURN;

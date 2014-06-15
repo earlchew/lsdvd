@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 	video_attr_t *video_attr;
 	subp_attr_t *subp_attr;
 	pgc_t *pgc;
-	int i, j, k, c, titles, cell, vts_ttn, title_set_nr;
+	int i, j, k, c, titles, vts_ttn, title_set_nr;
 	char lang_code[3];
 	char *dvd_device = "/dev/dvd";
 	int has_title = 0, ret = 0;
@@ -421,19 +421,21 @@ int main(int argc, char *argv[])
 
 		// CHAPTERS
 
-		cell = 0;
 		if (opt_c) {
+			int cell = pgc->program_map[0] - 1;
+			int end = cell + pgc->nr_of_cells;
+
 			dvd_info.titles[j].chapter_count = pgc->nr_of_programs;
 			dvd_info.titles[j].chapters = calloc(dvd_info.titles[j].chapter_count, sizeof(*dvd_info.titles[j].chapters));
 
-						int ms;
 			for (i=0; i<pgc->nr_of_programs; i++)
 			{
-				ms=0;
-				int next = pgc->program_map[i+1];
-				if (i == pgc->nr_of_programs - 1) next = pgc->nr_of_cells + 1;
-
-				while (cell < next - 1)
+				int ms = 0;
+				int next =
+					(i == pgc->nr_of_programs - 1)
+					? end
+					: pgc->program_map[i+1] - 1;
+				while (cell < next)
 				{
                                         // Only use first cell of multi-angle cells
                                         if (pgc->cell_playback[cell].block_mode <= 1)
@@ -444,6 +446,7 @@ int main(int argc, char *argv[])
 					cell++;
 				}
 				dvd_info.titles[j].chapters[i].startcell = pgc->program_map[i];
+				dvd_info.titles[j].chapters[i].lastcell = cell;
 				dvd_info.titles[j].chapters[i].length = ms * 0.001;
 
 
@@ -462,6 +465,8 @@ int main(int argc, char *argv[])
                                 dvd_info.titles[j].cells[i].block_mode = pgc->cell_playback[i].block_mode;
                                 dvd_info.titles[j].cells[i].block_type = pgc->cell_playback[i].block_type;
                                 converttime(&dvd_info.titles[j].cells[i].playback_time, &pgc->cell_playback[i].playback_time);
+				dvd_info.titles[j].cells[i].first_sector = pgc->cell_playback[i].first_sector;
+				dvd_info.titles[j].cells[i].last_sector = pgc->cell_playback[i].last_sector;
 			}
 		} else {
 			dvd_info.titles[j].cells = NULL;
