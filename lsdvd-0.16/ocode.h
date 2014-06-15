@@ -29,4 +29,3 @@ extern struct Syntax debug_syntax;
 void ocode_print(struct Syntax *, struct dvd_info*);
 
 #endif /* _OCODE_H_ */
-

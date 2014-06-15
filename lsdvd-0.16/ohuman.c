@@ -8,10 +8,10 @@ void ohuman_print(struct dvd_info *dvd_info) {
 	printf("Disc Title: %s\n", dvd_info->discinfo.disc_title);
 
 	int i, j;
-	for (j=0; j < dvd_info->title_count; j++) 
+	for (j=0; j < dvd_info->title_count; j++)
 	{
 	if ( opt_t == j+1 || opt_t == 0 ) {
-		
+
 		//GENERAL
 		printf("Title: %02d, Length: %02d:%02d:%02d.%03d ", j+1,
 				dvd_info->titles[j].general.playback_time.hour,
@@ -24,8 +24,8 @@ void ohuman_print(struct dvd_info *dvd_info) {
 //				dvd_info->titles[j].general.length);
 		printf("Chapters: %02d, Cells: %02d, ", dvd_info->titles[j].chapter_count_reported, dvd_info->titles[j].cell_count);
 		printf("Audio streams: %02d, Subpictures: %02d", dvd_info->titles[j].audiostream_count, dvd_info->titles[j].subtitle_count);
-		printf("\n"); 
-		
+		printf("\n");
+
                 if (dvd_info->titles[j].parameter.format != NULL ) {
 			printf("\tVTS: %02d, TTN: %02d, ", dvd_info->titles[j].parameter.vts, dvd_info->titles[j].parameter.ttn);
 			printf("FPS: %.2f, ", dvd_info->titles[j].parameter.fps);
@@ -86,14 +86,14 @@ void ohuman_print(struct dvd_info *dvd_info) {
 
 		// CELLS
 		if (dvd_info->titles[j].cells != NULL) {
-			for (i=0; i<dvd_info->titles[j].cell_count; i++)   
+			for (i=0; i<dvd_info->titles[j].cell_count; i++)
 			{
-//				printf("\tCell: %02d, Length: %02d:%02d:%02d.%03d\n", i+1, 
+//				printf("\tCell: %02d, Length: %02d:%02d:%02d.%03d\n", i+1,
 //						(int)dvd_info->titles[j].cells[i].length / 3600,
 //						(int)(dvd_info->titles[j].cells[i].length / 60 ) % 60,
 //						(int)(dvd_info->titles[j].cells[i].length) % 60,
 //						(int)(dvd_info->titles[j].cells[i].length*1000) % 1000);
-				printf("\tCell: %02d, Length: %02d:%02d:%02d.%03d\n", i+1, 
+				printf("\tCell: %02d, Length: %02d:%02d:%02d.%03d\n", i+1,
 						dvd_info->titles[j].cells[i].playback_time.hour,
 						dvd_info->titles[j].cells[i].playback_time.minute,
 						dvd_info->titles[j].cells[i].playback_time.second,

@@ -47,7 +47,7 @@ language[] = {
 	{ "pt", "Portugues" }, { "qu", "Quechua" }, { "rm", "Rhaeto-Romance" }, { "rn", "Kirundi" }, { "ro", "Romanian"  },
 	{ "ru", "Russian" }, { "rw", "Kinyarwanda" }, { "sa", "Sanskrit" }, { "sd", "Sindhi" }, { "sg", "Sangho" },
 	{ "sh", "Serbo-Croatian" }, { "si", "Sinhalese" }, { "sk", "Slovak" }, { "sl", "Slovenian" }, { "sm", "Samoan" },
- 	{ "sn", "Shona"  }, { "so", "Somali" }, { "sq", "Albanian" }, { "sr", "Serbian" }, { "ss", "Siswati" },
+	{ "sn", "Shona"  }, { "so", "Somali" }, { "sq", "Albanian" }, { "sr", "Serbian" }, { "ss", "Siswati" },
 	{ "st", "Sesotho" }, { "su", "Sundanese" }, { "sv", "Svenska" }, { "sw", "Swahili" }, { "ta", "Tamil" },
 	{ "te", "Telugu" }, { "tg", "Tajik" }, { "th", "Thai" }, { "ti", "Tigrinya" }, { "tk", "Turkmen" }, { "tl", "Tagalog" },
 	{ "tn", "Setswana" }, { "to", "Tonga" }, { "tr", "Turkish" }, { "ts", "Tsonga" }, { "tt", "Tatar" }, { "tw", "Twi" },
@@ -101,7 +101,7 @@ int dvdtime2msec(dvd_time_t *dt)
 
 /*
  * This is used to add up sets of times in the struct. it's not elegant at all
- * but a quick way to easily add up 4 times at once. tracking the times in usec's 
+ * but a quick way to easily add up 4 times at once. tracking the times in usec's
  * constantly is easier, but without using math.h, it sucks to actually DO anything with it
  * also it ***has*** to be better to return the playback_time, not just mess with it like this
  */
@@ -221,7 +221,7 @@ char output_option(char *arg)
 		return '\0';
 	}
 }
-										
+
 
 int main(int argc, char *argv[])
 {
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 	subp_attr_t *subp_attr;
 	pgc_t *pgc;
 	int i, j, k, c, titles, cell, vts_ttn, title_set_nr;
- 	char lang_code[3];
+	char lang_code[3];
 	char *dvd_device = "/dev/dvd";
 	int has_title = 0, ret = 0;
 	int max_length = 0, max_track = 0;
@@ -272,13 +272,13 @@ int main(int argc, char *argv[])
 	}
 
 	if (argv[optind]) { dvd_device = argv[optind];	}
-	
+
 	ret = stat(dvd_device, &dvd_stat);
 	if ( ret < 0 ) {
 		fprintf(stderr, "Can't find device %s\n", dvd_device);
 		return 1;
 	}
-	
+
 	dvd = DVDOpen(dvd_device);
 	if( !dvd ) {
 		fprintf( stderr, "Can't open disc %s!\n", dvd_device);
@@ -312,12 +312,12 @@ int main(int argc, char *argv[])
 	vmgi_mat = ifo_zero->vmgi_mat;
 
 	struct dvd_info dvd_info;
-		
+
 	dvd_info.discinfo.device = dvd_device;
 	dvd_info.discinfo.disc_title = has_title ? "unknown" : title;
 	dvd_info.discinfo.vmg_id =  vmgi_mat->vmg_identifier;
 	dvd_info.discinfo.provider_id = vmgi_mat->provider_identifier;
-	
+
 	dvd_info.title_count = titles;
 	dvd_info.titles = calloc(titles, sizeof(*dvd_info.titles));
 
@@ -342,7 +342,7 @@ int main(int argc, char *argv[])
 		dvd_info.titles[j].general.length = dvdtime2msec(&pgc->playback_time)/1000.0;
 		converttime(&dvd_info.titles[j].general.playback_time, &pgc->playback_time);
 		dvd_info.titles[j].general.vts_id = vtsi_mat->vts_identifier;
-				
+
 		if (dvdtime2msec(&pgc->playback_time) > max_length) {
 			max_length = dvdtime2msec(&pgc->playback_time);
 			max_track = j+1;
@@ -353,12 +353,12 @@ int main(int argc, char *argv[])
 
 		dvd_info.titles[j].audiostream_count = 0;
                 for (k=0; k < 8; k++)
-                  if (pgc->audio_control[k] & 0x8000) 
+                  if (pgc->audio_control[k] & 0x8000)
                     dvd_info.titles[j].audiostream_count++;
 
                 dvd_info.titles[j].subtitle_count = 0;
                 for (k=0; k < 32; k++)
-                  if (pgc->subp_control[k] & 0x80000000) 
+                  if (pgc->subp_control[k] & 0x80000000)
                     dvd_info.titles[j].subtitle_count++;
 
 		if(opt_v) {
@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
 		// PALETTE
 		if (opt_P) {
 			dvd_info.titles[j].palette = malloc(16 * sizeof(int));
-        	        for (i=0; i < 16; i++) { dvd_info.titles[j].palette[i] = pgc->palette[i]; }
+			for (i=0; i < 16; i++) { dvd_info.titles[j].palette[i] = pgc->palette[i]; }
 		} else {
 			dvd_info.titles[j].palette = NULL;
 		}
@@ -427,9 +427,9 @@ int main(int argc, char *argv[])
 
 						int ms;
 			for (i=0; i<pgc->nr_of_programs; i++)
-			{	   
+			{
 				ms=0;
-				int next = pgc->program_map[i+1];   
+				int next = pgc->program_map[i+1];
 				if (i == pgc->nr_of_programs - 1) next = pgc->nr_of_cells + 1;
 
 				while (cell < next - 1)
@@ -474,11 +474,11 @@ int main(int argc, char *argv[])
 			for (i=0, k=0; i<32; i++)
 			{
                                 if ((pgc->subp_control[i] & 0x80000000) == 0) continue;
-                          
+
 				subp_attr = &vtsi_mat->vts_subp_attr[i];
 				sprintf(lang_code, "%c%c", subp_attr->lang_code>>8, subp_attr->lang_code & 0xff);
 				if (!isalpha(lang_code[0]) || !isalpha(lang_code[1])) { lang_code[0] = 'x'; lang_code[1] = 'x'; }
-				
+
 				dvd_info.titles[j].subtitles[k].langcode = strdup(lang_code);
 				dvd_info.titles[j].subtitles[k].language = lang_name(lang_code);
 				dvd_info.titles[j].subtitles[k].content = subp_type[subp_attr->lang_extension];
@@ -489,33 +489,33 @@ int main(int argc, char *argv[])
 			dvd_info.titles[j].subtitles = NULL;
 		}
 
- 	} // if vtsi_mat
+	} // if vtsi_mat
 	} // if not -t
 	} // for each title
-	
+
 	if (! opt_t) { dvd_info.longest_track = max_track; }
 
 	if (opt_p) {
 		ocode_print(&perl_syntax, &dvd_info);
 	} else {
 		switch(opt_O) {
-			case 'p':	
-				ocode_print(&perl_syntax, &dvd_info);		
+			case 'p':
+				ocode_print(&perl_syntax, &dvd_info);
 				break;
                         case 'y':
-			       ocode_print(&python_syntax, &dvd_info);           
+			       ocode_print(&python_syntax, &dvd_info);
 				break;
 			case 'x':
-				oxml_print(&dvd_info);		
+				oxml_print(&dvd_info);
 				break;
 			case 'r':
-				ocode_print(&ruby_syntax, &dvd_info);		
+				ocode_print(&ruby_syntax, &dvd_info);
 				break;
                         case 'd':
-				ocode_print(&debug_syntax, &dvd_info);           
+				ocode_print(&debug_syntax, &dvd_info);
 				break;
 			default :
-				ohuman_print(&dvd_info);	
+				ohuman_print(&dvd_info);
 				break;
 		}
 	}

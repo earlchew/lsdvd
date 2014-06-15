@@ -9,7 +9,7 @@ int XMLDEF_(char *name, const char *format, ...) {
 	va_list argp;
 	XMLINDENT;
 	printf("<%s>", name);
-	
+
 	va_start(argp, format);
 	vprintf(format, argp);
 	va_end(argp);
@@ -20,14 +20,14 @@ int XMLDEF_(char *name, const char *format, ...) {
 // int XMLBOX_(char *name) {
 //	XMLINDENT;
 //	printf("<%s>\n", name);
-//	_xlvl++; 
+//	_xlvl++;
 //	_xlvl_type[_xlvl] = malloc(20 * sizeof(char));
 //	sprintf(_xlvl_type[_xlvl], "</%s>", name);
 //	return 0;
 //}
 
 //void XMLRETURN_()  {
-//	_xlvl--; 
+//	_xlvl--;
 //	XMLINDENT;
 //	printf("%s\n", _xlvl_type[_xlvl+1] );
 //	free(_xlvl_type[_xlvl+1]);
@@ -87,7 +87,7 @@ void oxml_print(struct dvd_info *dvd_info) {
 			XMLDEF("height", "%s", dvd_info->titles[j].parameter.height);
 			XMLDEF("df", "%s", permitted_df_xml[dvd_info->titles[j].parameter.df_code]);
 		}
-		
+
 		// PALETTE
 		if (dvd_info->titles[j].palette != NULL ) {
 			XMLBOX("palette");
@@ -159,7 +159,7 @@ void oxml_print(struct dvd_info *dvd_info) {
 				XMLRETURN;
 			}
 		}
-	XMLRETURN;	
+	XMLRETURN;
 	}
 	}
 	}
